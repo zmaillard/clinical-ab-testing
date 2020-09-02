@@ -8,12 +8,8 @@ terraform {
 }
 
 provider "azurerm" {
-  version = "~> 2.8.0"
+  version = "~> 2.25.0"
   features { }
-}
-
-provider "random" {
-  version = "= 2.2.1"
 }
 
 
@@ -50,6 +46,28 @@ resource "azurerm_storage_account" "staticwebstorage" {
         index_document = "index.html"
     }
 }
+
+resource "azurerm_storage_account" "tablestorage" {
+    name = "clinicalabdata${var.environment}"
+    resource_group_name = azurerm_resource_group.rg.name
+    location = var.location
+    account_tier = "Standard"
+    account_replication_type = "LRS"
+    account_kind = "StorageV2"
+}
+
+resource "azurerm_storage_table" "feature_flag" {
+  name                 = "featureflag"
+  resource_group_name  = azurerm_resource_group.rg.name
+  storage_account_name = azurerm_storage_account.tablestorage.name
+}
+
+resource "azurerm_storage_table" "feedback" {
+  name                 = "feedback"
+  resource_group_name  = azurerm_resource_group.rg.name
+  storage_account_name = azurerm_storage_account.tablestorage.name
+}
+
 
 resource "azurerm_cdn_endpoint" "staticwebendpoint" {
     name = "clinicalabendpoint${var.environment}"
